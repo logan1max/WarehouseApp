@@ -83,19 +83,19 @@ namespace WarehouseApp
                         product = x.product,
                         quantity = x.speed
                     });
- //                   .AsParallel();
- //                   .ToList();
-                    
-                    
-                    //from f in factories
-                    //       select new WarehouseProductLog
-                    //       {
-                    //           factoryName = f.name,
-                    //           quantity = f.speed,
-                    //           hour = hours,
-                    //           product = f.product
-                    //       };
+                //                   .AsParallel();
+                //                   .ToList();
 
+
+                //from f in factories
+                //       select new WarehouseProductLog
+                //       {
+                //           factoryName = f.name,
+                //           quantity = f.speed,
+                //           hour = hours,
+                //           product = f.product
+                //       };
+                
                 foreach (var s in temp)
                 {
                     Console.WriteLine(s.factoryName);

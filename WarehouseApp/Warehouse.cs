@@ -28,7 +28,7 @@ namespace WarehouseApp
             trucks = new List<Truck>() { new Truck("First", 1000), new Truck("Second", 3000) };
 
             M = 100;
-            n = 50;
+            n = 300;
             k = 10;
 
             double koef = 1.0;
@@ -54,10 +54,10 @@ namespace WarehouseApp
 
         internal async Task Work()
         {
-            int hours = 150; //кол-во часов работы
+            int hours = 200; //кол-во часов работы
 
             IEnumerable<WarehouseIncomingProductLog> inLog = new List<WarehouseIncomingProductLog>();
-            IEnumerable<WarehouseIncomingProductLog> inLog2 = new List<WarehouseIncomingProductLog>();
+            List<WarehouseIncomingProductLog> inLog2 = new List<WarehouseIncomingProductLog>();
             List<WarehouseLeavingProductLog> truckLog = new List<WarehouseLeavingProductLog>();
 
             for (int i = 1; i <= hours; i++)
@@ -76,45 +76,62 @@ namespace WarehouseApp
                     });
 
                 inLog = inLog.Concat(temp);
-                inLog2 = inLog2.Concat(temp);
+                inLog2 = inLog2.Concat(temp).ToList();
 
-                if ((inLog.Sum(x => x.quantity) + perHour) >= toDelivery)
+                int j = 1;
+                foreach (var t in temp)
+                {
+                    Console.WriteLine(j + " " + t.factoryName + " " + t.hourIn);
+                    j++;
+                }
+
+                double currentSum = inLog2.Sum(x => x.quantity);
+
+                if (currentSum >= toDelivery)
                 {
                     foreach (var t in trucks)
                     {
                         double load = 0;
 
-                        foreach (var l in inLog2)
+                        List<int> toDelete = new List<int>();
+
+                        for (int m = 0; m < inLog2.Count; i++)
                         {
-                            if (load + l.quantity <= t.capacity && !l.factoryName.Contains("_Leave"))
+                            if ((load + inLog2[m].quantity) <= t.capacity && !inLog2[m].factoryName.Contains("_Leave"))
                             {
-                                load += l.quantity;
+                                load += inLog2[m].quantity;
                                 truckLog.Add(new WarehouseLeavingProductLog
                                 {
-                                    recordIn = l,
+                                    recordIn = inLog2[m],
                                     truckName = t.name,
                                     hourOut = currentHour
                                 });
-                                l.factoryName = l.factoryName + "_Leave";
+                                inLog2[m].factoryName = inLog2[m].factoryName + "_Leave";
+                                toDelete.Add(m);
                             }
                             else
                             {
                                 break;
                             }
                         }
+
+                        foreach (var x in toDelete)
+                        {
+                            inLog2.RemoveAt(x);
+                        }
+
                     }
                 }
+
             }
 
-            
-
-            int j = 1;
+            int k = 1;
             foreach (var t in inLog)
             {
-                Console.WriteLine(j + " " + t.factoryName + " " + t.hourIn);
-                j++;
+                Console.WriteLine(k + " " + t.factoryName + " " + t.hourIn);
+                k++;
             }
-        }
+        } 
 
         internal IEnumerable<WarehouseLeavingProductLog> PickUp()
         {

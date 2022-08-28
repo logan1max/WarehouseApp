@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace WarehouseApp.Models
 {
-    internal class WarehouseProductLog
+    internal class WarehouseIncomingProductLog
     {
         internal string factoryName;
         internal double quantity;
-        internal int hour;
+        internal int hourIn;
         internal Product product;
     }
 }

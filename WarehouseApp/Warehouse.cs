@@ -17,6 +17,8 @@ namespace WarehouseApp
 
         double warehouseCapacity; //вместимость склада
 
+        double toDelivery; //95% наполняемости склада
+
         List<Factory> factories;
         List<Truck> trucks;
 
@@ -35,7 +37,7 @@ namespace WarehouseApp
 
             for (int i = 0; i < k; i++)
             {
-                Factory f = new Factory(alphabet.Substring(i, 1), koef * n);
+                Factory f = new Factory(alphabet.Substring(i % 26, 1), koef * n);
 
                 factories.Add(f);
                 koef += 0.1;
@@ -45,69 +47,89 @@ namespace WarehouseApp
                        select f).Sum(f => f.speed);
 
             warehouseCapacity = M * perHour;
+
+            toDelivery = warehouseCapacity * 0.95;
+
         }
 
         internal async Task Work()
         {
-            int hours = 1; //кол-во часов работы
+            int hours = 150; //кол-во часов работы
 
-            List<WarehouseProductLog> log = new List<WarehouseProductLog>();
+            IEnumerable<WarehouseIncomingProductLog> inLog = new List<WarehouseIncomingProductLog>();
+            IEnumerable<WarehouseIncomingProductLog> inLog2 = new List<WarehouseIncomingProductLog>();
+            List<WarehouseLeavingProductLog> truckLog = new List<WarehouseLeavingProductLog>();
 
-            while (hours <= 20)
-            {                
-                Console.WriteLine("Время: " + hours);
+            for (int i = 1; i <= hours; i++)
+            {
+                Console.WriteLine("Время: " + i);
 
-                //var temp = from f in factories.AsParallel()
-                //           select new
-                //           {
-                //               factoryName = f.name,
-                //               quantity = f.speed,
-                //               hour = hours,
-                //               product = f.product
-                //            };
-
-                //var temp = from f in factories
-                //           select new WarehouseProductLog
-                //           {
-                //               factoryName = f.name,
-                //               quantity = f.speed,
-                //               hour = hours,
-                //               product = f.product
-                //           };
+                int currentHour = i;
 
                 var temp = factories.AsParallel()
-                    .Select(x => new WarehouseProductLog
+                    .Select(x => new WarehouseIncomingProductLog
                     {
                         factoryName = x.name,
-                        hour = hours,
+                        hourIn = currentHour,
                         product = x.product,
                         quantity = x.speed
                     });
-                //                   .AsParallel();
-                //                   .ToList();
 
+                inLog = inLog.Concat(temp);
+                inLog2 = inLog2.Concat(temp);
 
-                //from f in factories
-                //       select new WarehouseProductLog
-                //       {
-                //           factoryName = f.name,
-                //           quantity = f.speed,
-                //           hour = hours,
-                //           product = f.product
-                //       };
-                
-                foreach (var s in temp)
+                if ((inLog.Sum(x => x.quantity) + perHour) >= toDelivery)
                 {
-                    Console.WriteLine(s.factoryName);
+                    foreach (var t in trucks)
+                    {
+                        double load = 0;
+
+                        foreach (var l in inLog2)
+                        {
+                            if (load + l.quantity <= t.capacity && !l.factoryName.Contains("_Leave"))
+                            {
+                                load += l.quantity;
+                                truckLog.Add(new WarehouseLeavingProductLog
+                                {
+                                    recordIn = l,
+                                    truckName = t.name,
+                                    hourOut = currentHour
+                                });
+                                l.factoryName = l.factoryName + "_Leave";
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+                    }
                 }
+            }
 
+            
 
-                hours++;
+            int j = 1;
+            foreach (var t in inLog)
+            {
+                Console.WriteLine(j + " " + t.factoryName + " " + t.hourIn);
+                j++;
             }
         }
-        
 
-        
+        internal IEnumerable<WarehouseLeavingProductLog> PickUp()
+        {
+            IEnumerable<WarehouseLeavingProductLog> tLog = new List<WarehouseLeavingProductLog>();
+
+            foreach (var t in trucks)
+            {
+
+            }
+
+            return tLog;
+        }
+
+
+
 
     }
 }

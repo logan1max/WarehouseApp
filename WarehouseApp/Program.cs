@@ -1,7 +1,7 @@
 ﻿using WarehouseApp;
 
-
 Warehouse t = new Warehouse();
 
-t.Work();
+await t.Work();
 
+Console.WriteLine();

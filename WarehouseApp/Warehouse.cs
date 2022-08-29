@@ -28,7 +28,7 @@ namespace WarehouseApp
         internal Warehouse()
         {
             factories = new List<Factory>();
-            trucks = new List<Truck>() { new Truck("First", 1000), new Truck("Second", 3000) };
+            trucks = new List<Truck>() { new Truck("First", 1000), new Truck("Second", 5000) };
 
             inLog = new List<WarehouseIncomingProductLog>();
             truckLog = new List<WarehouseLeavingProductLog>();
@@ -61,10 +61,6 @@ namespace WarehouseApp
         {
             int hours = 200; //кол-во часов работы
 
-    //        IEnumerable<WarehouseIncomingProductLog> inLog = new List<WarehouseIncomingProductLog>();
-            List<WarehouseIncomingProductLog> inLog = new List<WarehouseIncomingProductLog>();
-            List<WarehouseLeavingProductLog> truckLog = new List<WarehouseLeavingProductLog>();
-
             for (int i = 1; i <= hours; i++)
             {
                 Console.WriteLine("Время: " + i);
@@ -84,43 +80,18 @@ namespace WarehouseApp
                 inLog = inLog.Concat(temp).ToList();
 
                 int j = 1;
-                foreach (var t in temp)
-                {
-                    Console.WriteLine(j + " " + t.factoryName + " " + t.hourIn);
-                    j++;
-                }
+                //foreach (var t in temp)
+                //{
+                //    Console.WriteLine(j + " " + t.factoryName + " " + t.hourIn);
+                //    j++;
+                //}
 
                 double currentSum = inLog.Sum(x => x.quantity);
 
                 if (currentSum >= toDelivery)
                 {
-                    foreach (var t in trucks)
-                    {
-                        double load = 0;
-
-                        foreach(var l in inLog)
-                        {
-                            if ((load + l.quantity) <= t.capacity && !l.isLeave)
-                            {
-                                load += l.quantity;
-                                truckLog.Add(new WarehouseLeavingProductLog
-                                {
-                                    recordIn = l,
-                                    truckName = t.name,
-                                    hourOut = currentHour
-                                });
-
-                                l.isLeave = true;
-                            }
-                            else if ((load + l.quantity) >= t.capacity)
-                            {
-                                break;
-                            }
-                        }
-
-                    }
+                    await PickUp(currentHour);
                 }
-
             }
 
             int k = 1;
@@ -132,40 +103,51 @@ namespace WarehouseApp
                 k++;
  //               }
             }
-        } 
+        }
 
-        //internal void PickUp(int currentHour)
-        //{
-        //    foreach (var t in trucks)
-        //    {
-        //        double load = 0;
+        internal Task PickUp(int currentHour)
+        {
+            foreach (var t in trucks)
+            {
+                double load = 0;
 
-        //        foreach (var l in inLog)
-        //        {
-        //            if ((load + l.quantity) <= t.capacity && !l.isLeave)
-        //            {
-        //                load += l.quantity;
-        //                truckLog.Add(new WarehouseLeavingProductLog
-        //                {
-        //                    recordIn = l,
-        //                    truckName = t.name,
-        //                    hourOut = currentHour
-        //                });
+                foreach (var l in inLog.AsParallel())
+                {
+                    if ((load + l.quantity) <= t.capacity && !l.isLeave)
+                    {
+                        load += l.quantity;
+                        truckLog.Add(new WarehouseLeavingProductLog
+                        {
+                            recordIn = l,
+                            truckName = t.name,
+                            hourOut = currentHour
+                        });
 
-        //                l.isLeave = true;
-        //            }
-        //            else if ((load + l.quantity) >= t.capacity)
-        //            {
-        //                break;
-        //            }
-        //        }
+                        l.isLeave = true;
+                    }
+                    else if ((load + l.quantity) >= t.capacity)
+                    {
+                        break;
+                    }
+                }
 
-        //    }
-
-        //}
-
-
+            }
+            return Task.CompletedTask;
+        }
 
 
+        internal Task TruckStat()
+        {
+            foreach (var truck in trucks)
+            {
+                var stat = from t in truckLog.AsParallel()
+                           where t.truckName==truck.name
+                           select new { prName = }
+
+
+            }
+
+            return Task.CompletedTask;
+        }
     }
 }

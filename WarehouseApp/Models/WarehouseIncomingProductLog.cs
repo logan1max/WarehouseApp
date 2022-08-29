@@ -12,5 +12,6 @@ namespace WarehouseApp.Models
         internal double quantity;
         internal int hourIn;
         internal Product product;
+        internal bool isLeave;
     }
 }

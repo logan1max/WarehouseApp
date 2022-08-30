@@ -24,9 +24,7 @@ namespace WarehouseApp.Models
                 name = "Product" + name.ToString(),
                 weight = random.Next(100, 1000),
                 packageType = random.Next(10, 15)
-            };
-
-            
+            };            
         }
     }
 }

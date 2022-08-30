@@ -2,6 +2,12 @@
 
 Warehouse t = new Warehouse();
 
+t.InitStatsOutput();
+
 await t.Work();
 
-Console.WriteLine();
+Console.WriteLine("------------------------------------");
+t.InLogOutput();
+
+Console.WriteLine("------------------------------------");
+t.TruckStat();

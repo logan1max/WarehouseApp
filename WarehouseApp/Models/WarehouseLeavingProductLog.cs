@@ -11,6 +11,5 @@ namespace WarehouseApp.Models
         internal WarehouseIncomingProductLog recordIn;
         internal string truckName;
         internal int hourOut;
-
     }
 }
